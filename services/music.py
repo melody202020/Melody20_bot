@@ -136,9 +136,12 @@ class MusicService:
             return filepath
 
         if track_info and is_youtube:
-            search_query = f"{track_info.get('artist', '')} {track_info.get('title', '')}"
-            print(f"[DOWNLOAD] All YouTube failed, SoundCloud: {search_query}")
-            sc_results = self._search_soundcloud(search_query, limit=1)
+            artist = track_info.get('artist', '').strip()
+            title = track_info.get('title', '').strip()
+            title = self._clean_title(title)
+            search_query = f"{artist} {title}".strip()
+            print(f"[DOWNLOAD] YouTube failed, SoundCloud: {search_query}")
+            sc_results = self._search_soundcloud(search_query, limit=3)
             if sc_results:
                 sc_url = sc_results[0].get('url')
                 if sc_url:
@@ -148,6 +151,21 @@ class MusicService:
 
         print("[DOWNLOAD] ALL FAILED")
         return None
+
+    def _clean_title(self, title):
+        import re
+        title = re.sub(r'[^\w\s\u0600-\u06FF-]', ' ', title)
+        title = re.sub(r'\s+', ' ', title).strip()
+        words = title.split()
+        clean = []
+        skip = {'official', 'video', 'music', 'audio', 'lyric', 'lyrics', 'hd', '4k', 'remaster',
+                'clip', 'vevo', 'live', 'cover', 'remix', 'feat', 'ft', 'mp3', 'download',
+                'subscribe', 'channel', 'album', 'single', 'premiere', 'official video',
+                'official audio', 'mv', 'stereo', 'mono', 'original', 'version'}
+        for w in words:
+            if w.lower().strip(',.!?:;()[]{}') not in skip:
+                clean.append(w)
+        return ' '.join(clean).strip()
 
     def _download_soundcloud(self, url, output_name, progress_callback=None):
         output_path = os.path.join(DOWNLOAD_PATH, output_name)
