@@ -1,5 +1,5 @@
 python-telegram-bot[job-queue]==21.3
-yt-dlp>=2024.10.22
+yt-dlp>=2025.6.9
 pydub==0.25.1
 python-dotenv==1.0.0
 requests>=2.31.0
